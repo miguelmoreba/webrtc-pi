@@ -1,0 +1,28 @@
+{
+  "name": "webrtc-pi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/node": "^20.12.7",
+    "@types/socket.io-client": "^3.0.0",
+    "@types/sharp": "^0.32.0",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "sharp": "^0.33.4",
+    "tsc": "^2.0.4",
+    "typescript": "^5.4.5",
+    "wrtc": "^0.4.7",
+    "@roamhq/wrtc": "^0.8.0",
+    "@microsoft/signalr": "^8.0.0"
+  }
+}
