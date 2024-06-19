@@ -163,7 +163,9 @@ const setUpDataChannelApiInterface = async (
       }
     } catch (e) {
       console.log("ERROR", e);
-      cameraApiChannel.send(JSON.stringify({ ok: false }));
+      if (cameraApiChannel.readyState === "open"){
+        cameraApiChannel.send(JSON.stringify({ ok: false }));
+      }
     }
   };
 
