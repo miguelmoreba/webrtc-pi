@@ -39,8 +39,7 @@ const peerConnections = new Map<string, RTCPeerConnection>();
 signalRConnection.start().then(async () => {
   console.log("Connected to signalR");
 
-  // const deviceId = await getDeviceId();
-  const deviceId = "100000001d638428";
+  const deviceId = await getDeviceId() || "100000001d638428";
   
   signalRConnection.on(
     `ClientRequiresStream-${deviceId}`,
@@ -242,7 +241,9 @@ const getDeviceId = async () => {
   if (match && match[1]) {
     const deviceId = match[1];
     console.log("Device ID:", deviceId);
+    return deviceId;
   } else {
     console.log("Device ID not found");
+    return null;
   }
 };
