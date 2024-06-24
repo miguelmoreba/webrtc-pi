@@ -22,6 +22,7 @@
     "@microsoft/signalr": "^8.0.0",
     "@roamhq/wrtc": "^0.8.0",
     "axios": "^1.7.2",
+    "node-pre-gyp": "^0.17.0",
     "sharp": "^0.33.4",
     "typescript": "^5.4.5",
     "wrtc": "^0.4.7"
