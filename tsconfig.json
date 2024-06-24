@@ -4,6 +4,8 @@
       "module": "commonjs",
       "strict": true,
       "esModuleInterop": true,
+      "rootDir": ".",
+      "outDir": "./dist",
       "noImplicitAny": false
     }
   }
