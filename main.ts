@@ -1,4 +1,8 @@
-import { HttpTransportType, HubConnectionBuilder } from "@microsoft/signalr";
+import {
+  HttpTransportType,
+  HubConnection,
+  HubConnectionBuilder,
+} from "@microsoft/signalr";
 import sharp from "sharp";
 const { RTCVideoSource, RTCVideoSink, rgbaToI420 } =
   require("wrtc").nonstandard;
@@ -77,7 +81,11 @@ signalRConnection.start().then(async () => {
 
       peerConnections.set(sessionUuid, peerConnection);
 
-      setUpDataChannelApiInterface(peerConnection);
+      setUpDataChannelApiInterface(
+        peerConnection,
+        signalRConnection,
+        sessionUuid
+      );
       // setupDataChannelContinuousStream(peerConnection);
 
       peerConnection.createOffer().then((offer: any) => {
@@ -127,7 +135,9 @@ const setupDataChannelContinuousStream = async (
 };
 
 const setUpDataChannelApiInterface = async (
-  peerConnection: RTCPeerConnection
+  peerConnection: RTCPeerConnection,
+  signalRConnection: HubConnection,
+  sessionUuid: string
 ) => {
   const cameraApiChannel = peerConnection.createDataChannel("cameraApiChannel");
 
@@ -138,7 +148,7 @@ const setUpDataChannelApiInterface = async (
 
   cameraApiChannel.onmessage = async (event) => {
     try {
-      console.log("THIS IS THE MESSAGE", event.data);
+      console.log("Fetching url", event.data);
       const response = await fetch(`${CAMERA_API_URL}${event.data}`);
       const contentType = response.headers.get("content-type");
 
@@ -149,7 +159,7 @@ const setUpDataChannelApiInterface = async (
         };
         console.log("text response", formattedResponse);
         cameraApiChannel.send(JSON.stringify(formattedResponse));
-      } else if (contentType?.includes("JSON")) {
+      } else if (contentType?.includes("json")) {
         const formattedResponse = {
           ok: response.ok,
           data: await response.json(),
@@ -157,14 +167,13 @@ const setUpDataChannelApiInterface = async (
         cameraApiChannel.send(JSON.stringify(formattedResponse));
       } else if (contentType?.includes("image")) {
         const myBlob = await response.blob();
-        console.log(typeof myBlob, myBlob, myBlob instanceof Blob);
         cameraApiChannel.send(await myBlob.arrayBuffer());
       } else if (contentType?.includes("octet-stream")) {
         cameraApiChannel.send(await response.arrayBuffer());
       }
     } catch (e) {
       console.log("ERROR", e);
-      if (cameraApiChannel.readyState === "open"){
+      if (cameraApiChannel.readyState === "open") {
         cameraApiChannel.send(JSON.stringify({ ok: false }));
       }
     }
@@ -176,6 +185,60 @@ const setUpDataChannelApiInterface = async (
   cameraApiChannel.onclose = (e) => console.log("Channel closed", e);
 
   cameraApiChannel.onerror = (e) => console.log("Channel error", e);
+
+  signalRConnection.on(
+    `CameraApiRequest-${sessionUuid}`,
+    async (sessionUuid, url: string) => {
+      
+      console.log('Got request url');
+      try {
+        console.log("Fetching url", url);
+        const response = await fetch(`${CAMERA_API_URL}${url}`);
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("text")) {
+          console.log('Text Response');
+          signalRConnection.invoke(
+            "CameraApiResponse",
+            sessionUuid,
+            response.ok,
+            await response.text(),
+            null
+          );
+        } else if (contentType?.includes("image")) {
+          const buffer = await response.arrayBuffer();
+          const base64 = Buffer.from(buffer).toString('base64');
+          signalRConnection.invoke(
+            "CameraApiResponse",
+            sessionUuid,
+            response.ok,
+            null,
+            base64
+          );
+        } else if (contentType?.includes("octet-stream")) {
+          console.log('Buffer response');
+          const buffer = await response.arrayBuffer();
+          const base64 = Buffer.from(buffer).toString('base64');
+          console.log('buffer', buffer);
+          signalRConnection.invoke(
+            "CameraApiResponse",
+            sessionUuid,
+            response.ok,
+            null,
+            base64
+          );
+        }
+      } catch (e) {
+        console.log('Error catched')
+        signalRConnection.invoke(
+          "CameraApiResponse",
+          sessionUuid,
+          false,
+          null,
+          null
+        );
+      }
+    }
+  );
 };
 
 const setupMediaChannelStream = async (peerConnection: RTCPeerConnection) => {
