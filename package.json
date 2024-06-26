@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.ts",
   "scripts": {
-    "dev": "nodemon main.ts",
+    "dev": "nodemon src/main.ts",
     "build": "tsc",
     "run": "node ./dist/main.js"
   },
