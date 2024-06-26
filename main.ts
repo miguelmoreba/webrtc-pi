@@ -144,9 +144,13 @@ const setUpDataChannelApiInterface = async (
   setInterval(() => {
     console.log("peerConnection is", peerConnection.connectionState);
     console.log("cameraApiChannel is", cameraApiChannel.readyState);
+
+    console.log("Max message size", peerConnection.sctp?.maxMessageSize);
   }, 1000);
 
   cameraApiChannel.onmessage = async (event) => {
+
+    console.log('buffered amount', cameraApiChannel.bufferedAmount)
     try {
       console.log("Fetching url", event.data);
       const response = await fetch(`${CAMERA_API_URL}${event.data}`);
@@ -185,6 +189,11 @@ const setUpDataChannelApiInterface = async (
   cameraApiChannel.onclose = (e) => console.log("Channel closed", e);
 
   cameraApiChannel.onerror = (e) => console.log("Channel error", e);
+
+  cameraApiChannel.bufferedAmountLowThreshold = 1000 * 1024;
+
+  cameraApiChannel.onbufferedamountlow = (e) => console.log("Buffer amount low", e);
+
 
   signalRConnection.on(
     `CameraApiRequest-${sessionUuid}`,
