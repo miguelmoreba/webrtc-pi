@@ -149,11 +149,11 @@ const setUpDataChannelApiInterface = async (
   }, 1000);
 
   cameraApiChannel.onmessage = async (event) => {
-
-    console.log('buffered amount', cameraApiChannel.bufferedAmount)
+    console.log("buffered amount", cameraApiChannel.bufferedAmount);
     try {
       console.log("Fetching url", event.data);
-      const response = await fetch(`${CAMERA_API_URL}${event.data}`);
+      const parsedMessage = JSON.parse(event.data);
+      const response = await fetch(`${CAMERA_API_URL}${parsedMessage.path}`);
       const contentType = response.headers.get("content-type");
 
       if (contentType?.includes("text")) {
@@ -171,9 +171,15 @@ const setUpDataChannelApiInterface = async (
         cameraApiChannel.send(JSON.stringify(formattedResponse));
       } else if (contentType?.includes("image")) {
         const myBlob = await response.blob();
-        cameraApiChannel.send(await myBlob.arrayBuffer());
+        const arrayBuffer = await myBlob.arrayBuffer();
+        parsedMessage.chunk
+          ? sendBufferInChunks(cameraApiChannel, arrayBuffer)
+          : cameraApiChannel.send(arrayBuffer);
       } else if (contentType?.includes("octet-stream")) {
-        cameraApiChannel.send(await response.arrayBuffer());
+        const arrayBuffer = await response.arrayBuffer();
+        parsedMessage.chunk
+          ? sendBufferInChunks(cameraApiChannel, arrayBuffer)
+          : cameraApiChannel.send(arrayBuffer);
       }
     } catch (e) {
       console.log("ERROR", e);
@@ -320,4 +326,23 @@ const getDeviceId = async () => {
     console.log("Device ID not found");
     return null;
   }
+};
+
+const sendBufferInChunks = (
+  dataChannel: RTCDataChannel,
+  buffer: ArrayBuffer
+) => {
+  const chunkSize = 100 * 1024; // 100 KB
+  let offset = 0;
+
+  const uint8Array = new Uint8Array(buffer);
+
+  while (offset < buffer.byteLength) {
+    const chunk = uint8Array.subarray(offset, offset + chunkSize);
+    offset += chunkSize;
+
+    dataChannel.send(chunk);
+  }
+
+  dataChannel.send("Done");
 };
