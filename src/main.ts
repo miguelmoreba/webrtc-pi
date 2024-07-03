@@ -201,58 +201,6 @@ const setUpDataChannelApiInterface = async (
   cameraApiChannel.onbufferedamountlow = (e) =>
     console.log("Buffer amount low", e);
 
-  signalRConnection.on(
-    `CameraApiRequest-${sessionUuid}`,
-    async (sessionUuid, url: string) => {
-      console.log("Got request url");
-      try {
-        console.log("Fetching url", url);
-        const response = await fetch(`${CAMERA_API_URL}${url}`);
-        const contentType = response.headers.get("content-type");
-        if (contentType?.includes("text")) {
-          console.log("Text Response");
-          signalRConnection.invoke(
-            "CameraApiResponse",
-            sessionUuid,
-            response.ok,
-            await response.text(),
-            null
-          );
-        } else if (contentType?.includes("image")) {
-          const buffer = await response.arrayBuffer();
-          const base64 = Buffer.from(buffer).toString("base64");
-          signalRConnection.invoke(
-            "CameraApiResponse",
-            sessionUuid,
-            response.ok,
-            null,
-            base64
-          );
-        } else if (contentType?.includes("octet-stream")) {
-          console.log("Buffer response");
-          const buffer = await response.arrayBuffer();
-          const base64 = Buffer.from(buffer).toString("base64");
-          console.log("buffer", buffer);
-          signalRConnection.invoke(
-            "CameraApiResponse",
-            sessionUuid,
-            response.ok,
-            null,
-            base64
-          );
-        }
-      } catch (e) {
-        console.log("Error catched");
-        signalRConnection.invoke(
-          "CameraApiResponse",
-          sessionUuid,
-          false,
-          null,
-          null
-        );
-      }
-    }
-  );
 };
 
 const setupMediaChannelStream = async (peerConnection: RTCPeerConnection) => {
