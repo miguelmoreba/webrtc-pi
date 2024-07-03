@@ -159,14 +159,14 @@ const setUpDataChannelApiInterface = async (
       if (contentType?.includes("text")) {
         const formattedResponse = {
           ok: response.ok,
-          data: await response.text(),
+          text: await response.text(),
         };
         console.log("text response", formattedResponse);
         cameraApiChannel.send(JSON.stringify(formattedResponse));
       } else if (contentType?.includes("json")) {
         const formattedResponse = {
           ok: response.ok,
-          data: await response.json(),
+          text: await response.text(),
         };
         cameraApiChannel.send(JSON.stringify(formattedResponse));
       } else if (contentType?.includes("image")) {
