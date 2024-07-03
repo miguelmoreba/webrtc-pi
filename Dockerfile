@@ -1,7 +1,5 @@
 FROM node:18
 
-# RUN apk add --no-cache gcompat libstdc++
-
 WORKDIR /usr/src/app
 
 COPY package*.json ./
