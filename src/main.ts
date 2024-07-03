@@ -13,7 +13,6 @@ import {
 } from "wrtc";
 
 const API_URL = "https://dev-api-vpc.egoscue.com";
-// const API_URL = "https://localhost:5001";
 
 const CAMERA_API_URL = "https://localhost";
 
@@ -82,9 +81,7 @@ signalRConnection.start().then(async () => {
       peerConnections.set(sessionUuid, peerConnection);
 
       setUpDataChannelApiInterface(
-        peerConnection,
-        signalRConnection,
-        sessionUuid
+        peerConnection
       );
       // setupDataChannelContinuousStream(peerConnection);
 
@@ -135,9 +132,7 @@ const setupDataChannelContinuousStream = async (
 };
 
 const setUpDataChannelApiInterface = async (
-  peerConnection: RTCPeerConnection,
-  signalRConnection: HubConnection,
-  sessionUuid: string
+  peerConnection: RTCPeerConnection
 ) => {
   const cameraApiChannel = peerConnection.createDataChannel("cameraApiChannel");
 
