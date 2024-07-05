@@ -17,3 +17,15 @@
    docker stop webrtc-pi
    ```
    Then repeat steps above
+
+## Housekeeping
+
+In order to preventing the pi from storing old images:
+
+```
+docker container prune
+```
+
+```
+docker image prune --all
+```
