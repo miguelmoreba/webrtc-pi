@@ -7,5 +7,13 @@
    ```
 3. Run
    ```
-   docker run --network="host" pi-stream
+   docker run --name webrtc-pi --network="host" webrtc-pi-stream
    ```
+
+## When a new version is available
+
+   Run
+   ```
+   docker stop webrtc-pi
+   ```
+   Then repeat steps above
