@@ -19,7 +19,7 @@ const CAMERA_API_URL = "https://localhost";
 const servers = {
   iceServers: [
     {
-      urls: ["stun:stun1.1.google.com:19302", "stun:stun2.1.google.com:19302"],
+      urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"],
     },
   ],
   iceCandidatePoolSize: 10,
@@ -80,9 +80,7 @@ signalRConnection.start().then(async () => {
 
       peerConnections.set(sessionUuid, peerConnection);
 
-      setUpDataChannelApiInterface(
-        peerConnection
-      );
+      setUpDataChannelApiInterface(peerConnection);
       // setupDataChannelContinuousStream(peerConnection);
 
       peerConnection.createOffer().then((offer: any) => {
@@ -137,16 +135,15 @@ const setUpDataChannelApiInterface = async (
   const cameraApiChannel = peerConnection.createDataChannel("cameraApiChannel");
 
   setInterval(() => {
-    console.log("peerConnection is", peerConnection.connectionState);
-    console.log("cameraApiChannel is", cameraApiChannel.readyState);
-
-    console.log("Max message size", peerConnection.sctp?.maxMessageSize);
-  }, 1000);
+    // console.log("peerConnection is", peerConnection.connectionState);
+    // console.log("cameraApiChannel is", cameraApiChannel.readyState);
+    // console.log("Max message size", peerConnection.sctp?.maxMessageSize);
+  }, 5000);
 
   cameraApiChannel.onmessage = async (event) => {
-    console.log("buffered amount", cameraApiChannel.bufferedAmount);
+    // console.log("buffered amount", cameraApiChannel.bufferedAmount);
     try {
-      console.log("Fetching url", event.data);
+      // console.log("Fetching url", event.data);
       const parsedMessage = JSON.parse(event.data);
       const response = await fetch(`${CAMERA_API_URL}${parsedMessage.path}`);
       const contentType = response.headers.get("content-type");
@@ -195,7 +192,6 @@ const setUpDataChannelApiInterface = async (
 
   cameraApiChannel.onbufferedamountlow = (e) =>
     console.log("Buffer amount low", e);
-
 };
 
 const setupMediaChannelStream = async (peerConnection: RTCPeerConnection) => {
