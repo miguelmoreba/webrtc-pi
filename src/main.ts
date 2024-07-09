@@ -100,7 +100,7 @@ signalRConnection.start().then(async () => {
       const peerConnection = new RTCPeerConnection(servers);
 
       peerConnection.onicecandidate = (event) => {
-        console.log('a candidate!!!')
+        console.log('new own candidate')
         if (event.candidate) {
           signalRConnection.invoke(
             "IceCandidate",
@@ -139,15 +139,10 @@ const setupDataChannel = (peerConnection, dataChannel) => {
 const setupDataChannelContinuousStream = async (
   peerConnection: RTCPeerConnection
 ) => {
-  console.log("GOT HERE");
   const channel = peerConnection.createDataChannel("piContinuousStream");
   // await fetch(`${CAMERA_API_URL}/stop`);
   // await fetch(`${CAMERA_API_URL}/start`);
 
-  setInterval(() => {
-    console.log("peerConnection is", peerConnection.connectionState);
-    console.log("piContinuousStream is", channel.readyState);
-  }, 1000);
 
   setInterval(async () => {
     if (channel.readyState == "open") {
@@ -169,18 +164,14 @@ const setUpDataChannelApiInterface = async (
 ) => {
   const cameraApiChannel = peerConnection.createDataChannel("cameraApiChannel");
 
-  setInterval(() => {
-    console.log("peerConnection is", peerConnection.connectionState);
-    console.log("cameraApiChannel is", cameraApiChannel.readyState);
-    // console.log("Max message size", peerConnection.sctp?.maxMessageSize);
-
-    logSelectedCandidates(peerConnection);
-  }, 5000);
+  peerConnection.onconnectionstatechange = (event) => {
+    console.log('Connection number  state changed to', peerConnection.connectionState);
+    console.log('Camera api channel is', cameraApiChannel.readyState);
+  }
 
   cameraApiChannel.onmessage = async (event) => {
-    // console.log("buffered amount", cameraApiChannel.bufferedAmount);
     try {
-      // console.log("Fetching url", event.data);
+      console.log("Fetching url", event.data);
       const parsedMessage = JSON.parse(event.data);
       const response = await fetch(`${CAMERA_API_URL}${parsedMessage.path}`);
       const contentType = response.headers.get("content-type");
@@ -221,9 +212,9 @@ const setUpDataChannelApiInterface = async (
   cameraApiChannel.onclosing = (e) =>
     console.log("Closing the data channel because" + e);
 
-  cameraApiChannel.onclose = (e) => console.log("Channel closed", e);
+  cameraApiChannel.onclose = (e) => console.log("Channel closed");
 
-  cameraApiChannel.onerror = (e) => console.log("Channel error", e);
+  cameraApiChannel.onerror = (e) => console.log("Channel error");
 
   cameraApiChannel.bufferedAmountLowThreshold = 1000 * 1024;
 
