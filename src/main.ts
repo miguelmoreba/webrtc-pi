@@ -323,13 +323,13 @@ const sendBufferInChunks = (
   dataChannel.send("Done");
 };
 
-function logSelectedCandidates(peerConnection: RTCPeerConnection) {
-  peerConnection.getStats().then(stats => {
-    stats.forEach(report => {
-      if (report.type === 'candidate-pair' && report.state === 'succeeded') {
-        console.log('Selected candidate pair:', report);
-        console.log('Local candidate:', stats.get(report.localCandidateId));
-        console.log('Remote candidate:', stats.get(report.remoteCandidateId));
+const logSelectedCandidates = (peerConnection: RTCPeerConnection) => {
+  peerConnection.getStats().then((stats) => {
+    stats.forEach((report) => {
+      if (report.type === "candidate-pair" && report.state === "succeeded") {
+        console.log("Selected candidate pair:", report);
+        console.log("Local candidate:", stats.get(report.localCandidateId));
+        console.log("Remote candidate:", stats.get(report.remoteCandidateId));
       }
     });
   });
