@@ -100,7 +100,6 @@ signalRConnection.start().then(async () => {
       const peerConnection = new RTCPeerConnection(servers);
 
       peerConnection.onicecandidate = (event) => {
-        console.log("new own candidate");
         if (event.candidate) {
           signalRConnection.invoke(
             "IceCandidate",
