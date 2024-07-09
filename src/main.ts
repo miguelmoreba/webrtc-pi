@@ -100,7 +100,7 @@ signalRConnection.start().then(async () => {
       const peerConnection = new RTCPeerConnection(servers);
 
       peerConnection.onicecandidate = (event) => {
-        console.log('new own candidate')
+        console.log("new own candidate");
         if (event.candidate) {
           signalRConnection.invoke(
             "IceCandidate",
@@ -143,7 +143,6 @@ const setupDataChannelContinuousStream = async (
   // await fetch(`${CAMERA_API_URL}/stop`);
   // await fetch(`${CAMERA_API_URL}/start`);
 
-
   setInterval(async () => {
     if (channel.readyState == "open") {
       const response = await getCaptureFromApi();
@@ -165,9 +164,12 @@ const setUpDataChannelApiInterface = async (
   const cameraApiChannel = peerConnection.createDataChannel("cameraApiChannel");
 
   peerConnection.onconnectionstatechange = (event) => {
-    console.log('Connection number  state changed to', peerConnection.connectionState);
-    console.log('Camera api channel is', cameraApiChannel.readyState);
-  }
+    console.log(
+      "Connection number  state changed to",
+      peerConnection.connectionState
+    );
+    console.log("Camera api channel is", cameraApiChannel.readyState);
+  };
 
   cameraApiChannel.onmessage = async (event) => {
     try {
@@ -324,4 +326,4 @@ const logSelectedCandidates = (peerConnection: RTCPeerConnection) => {
       }
     });
   });
-}
+};
