@@ -110,8 +110,6 @@ signalRConnection.start().then(async () => {
         }
       };
 
-      console.log("Peer connection", peerConnection);
-
       peerConnections.set(sessionUuid, peerConnection);
 
       setUpDataChannelApiInterface(peerConnection, sessionUuid);
@@ -165,14 +163,14 @@ const setUpDataChannelApiInterface = async (
 
   peerConnection.onconnectionstatechange = () => {
     console.log(
-      `Connection number ${sessionUuid} state changed to ${peerConnection.connectionState}}`
+      `Connection number ${sessionUuid} state changed to ${peerConnection.connectionState}`
     );
     console.log(`Camera api channel is ${cameraApiChannel.readyState}`);
   };
 
   cameraApiChannel.onmessage = async (event) => {
     try {
-      console.log("Fetching url", event.data);
+      // console.log("Fetching url", event.data);
       const parsedMessage = JSON.parse(event.data);
       const response = await fetch(`${CAMERA_API_URL}${parsedMessage.path}`);
       const contentType = response.headers.get("content-type");
