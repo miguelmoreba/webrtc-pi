@@ -135,9 +135,11 @@ const setUpDataChannelApiInterface = async (
   const cameraApiChannel = peerConnection.createDataChannel("cameraApiChannel");
 
   setInterval(() => {
-    // console.log("peerConnection is", peerConnection.connectionState);
-    // console.log("cameraApiChannel is", cameraApiChannel.readyState);
+    console.log("peerConnection is", peerConnection.connectionState);
+    console.log("cameraApiChannel is", cameraApiChannel.readyState);
     // console.log("Max message size", peerConnection.sctp?.maxMessageSize);
+
+    logSelectedCandidates(peerConnection);
   }, 5000);
 
   cameraApiChannel.onmessage = async (event) => {
@@ -285,3 +287,15 @@ const sendBufferInChunks = (
 
   dataChannel.send("Done");
 };
+
+function logSelectedCandidates(peerConnection: RTCPeerConnection) {
+  peerConnection.getStats().then(stats => {
+    stats.forEach(report => {
+      if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+        console.log('Selected candidate pair:', report);
+        console.log('Local candidate:', stats.get(report.localCandidateId));
+        console.log('Remote candidate:', stats.get(report.remoteCandidateId));
+      }
+    });
+  });
+}
