@@ -115,7 +115,7 @@ signalRConnection.start().then(async () => {
 
       peerConnections.set(sessionUuid, peerConnection);
 
-      setUpDataChannelApiInterface(peerConnection);
+      setUpDataChannelApiInterface(peerConnection, sessionUuid);
       // setupDataChannelContinuousStream(peerConnection);
 
       peerConnection.createOffer().then((offer: any) => {
@@ -159,16 +159,16 @@ const setupDataChannelContinuousStream = async (
 };
 
 const setUpDataChannelApiInterface = async (
-  peerConnection: RTCPeerConnection
+  peerConnection: RTCPeerConnection,
+  sessionUuid: string
 ) => {
   const cameraApiChannel = peerConnection.createDataChannel("cameraApiChannel");
 
-  peerConnection.onconnectionstatechange = (event) => {
+  peerConnection.onconnectionstatechange = () => {
     console.log(
-      "Connection number  state changed to",
-      peerConnection.connectionState
+      `Connection number ${sessionUuid} state changed to ${peerConnection.connectionState}}`
     );
-    console.log("Camera api channel is", cameraApiChannel.readyState);
+    console.log(`Camera api channel is ${cameraApiChannel.readyState}`);
   };
 
   cameraApiChannel.onmessage = async (event) => {
