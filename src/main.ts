@@ -84,7 +84,7 @@ signalRConnection.start().then(async () => {
       );
 
       signalRConnection.on(
-        `VerifiedIceCandidate-${sessionUuid}`,
+        `VerifiedIceCandidate-client-${sessionUuid}`,
         async (sessionUuid, candidate) => {
           console.log("new candidate", candidate, sessionUuid);
           try {
@@ -98,6 +98,18 @@ signalRConnection.start().then(async () => {
       );
 
       const peerConnection = new RTCPeerConnection(servers);
+
+      peerConnection.onicecandidate = (event) => {
+        console.log('a candidate!!!')
+        if (event.candidate) {
+          signalRConnection.invoke(
+            "IceCandidate",
+            sessionUuid,
+            JSON.stringify(event.candidate),
+            "server"
+          );
+        }
+      };
 
       console.log("Peer connection", peerConnection);
 
