@@ -64,7 +64,7 @@ process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 const peerConnections = new Map<string, RTCPeerConnection>();
 
 signalRConnection.start().then(async () => {
-  console.log("Connected to signalR");
+  log("Connected to signalR");
 
   const deviceId = (await getDeviceId()) || "100000001d638428";
 
@@ -74,7 +74,7 @@ signalRConnection.start().then(async () => {
       signalRConnection.on(
         `VerifiedAnswer-${sessionUuid}`,
         async (sessionUuid, answer) => {
-          console.log(`Got an answer for uuid ${sessionUuid}`);
+          log(`Got an answer for uuid ${sessionUuid}`);
           const peerConnection = peerConnections.get(sessionUuid);
           const answerDescription = new RTCSessionDescription(
             JSON.parse(answer)
@@ -86,13 +86,13 @@ signalRConnection.start().then(async () => {
       signalRConnection.on(
         `VerifiedIceCandidate-client-${sessionUuid}`,
         async (sessionUuid, candidate) => {
-          console.log("new candidate", candidate, sessionUuid);
+          log(`new candidate ${candidate} ${sessionUuid}`);
           try {
             const peerConnection = peerConnections.get(sessionUuid);
             const iceCandidate = new RTCIceCandidate(JSON.parse(candidate));
             await peerConnection?.addIceCandidate(iceCandidate);
           } catch (error) {
-            console.error("Error adding ICE candidate:", error);
+            console.error(`Error adding ICE candidate: ${error}`);
           }
         }
       );
@@ -116,7 +116,7 @@ signalRConnection.start().then(async () => {
       // setupDataChannelContinuousStream(peerConnection);
 
       peerConnection.createOffer().then((offer: any) => {
-        console.log("Offer created");
+        log("Offer created");
         peerConnection.setLocalDescription(offer);
         signalRConnection.invoke("Offer", sessionUuid, JSON.stringify(offer));
       });
@@ -125,8 +125,8 @@ signalRConnection.start().then(async () => {
 });
 
 const setupDataChannel = (peerConnection, dataChannel) => {
-  console.log("peerConnection is", peerConnection.connectionState);
-  console.log("piSendChannel is", dataChannel.readyState);
+  log(`peerConnection is ${peerConnection.connectionState}`);
+  log(`piSendChannel is ${dataChannel.readyState}`);
 
   if (dataChannel?.readyState == "open") {
     dataChannel.send(`Counter is 1`);
@@ -143,7 +143,7 @@ const setupDataChannelContinuousStream = async (
   setInterval(async () => {
     if (channel.readyState == "open") {
       const response = await getCaptureFromApi();
-      console.log(response);
+      log(response);
 
       if (response.image === null) {
         // TODO: error count
@@ -162,15 +162,15 @@ const setUpDataChannelApiInterface = async (
   const cameraApiChannel = peerConnection.createDataChannel("cameraApiChannel");
 
   peerConnection.onconnectionstatechange = () => {
-    console.log(
+    log(
       `Connection number ${sessionUuid} state changed to ${peerConnection.connectionState}`
     );
-    console.log(`Camera api channel is ${cameraApiChannel.readyState}`);
+    log(`Camera api channel is ${cameraApiChannel.readyState}`);
   };
 
   cameraApiChannel.onmessage = async (event) => {
     try {
-      // console.log("Fetching url", event.data);
+      // log("Fetching url", event.data);
       const parsedMessage = JSON.parse(event.data);
       const response = await fetch(`${CAMERA_API_URL}${parsedMessage.path}`);
       const contentType = response.headers.get("content-type");
@@ -180,7 +180,7 @@ const setUpDataChannelApiInterface = async (
           ok: response.ok,
           text: await response.text(),
         };
-        console.log("text response", formattedResponse);
+        log(`text response ${formattedResponse}`);
         cameraApiChannel.send(JSON.stringify(formattedResponse));
       } else if (contentType?.includes("json")) {
         const formattedResponse = {
@@ -201,7 +201,7 @@ const setUpDataChannelApiInterface = async (
           : cameraApiChannel.send(arrayBuffer);
       }
     } catch (e) {
-      console.log("ERROR", e);
+      log(`ERROR ${e}`);
       if (cameraApiChannel.readyState === "open") {
         cameraApiChannel.send(JSON.stringify({ ok: false }));
       }
@@ -209,16 +209,16 @@ const setUpDataChannelApiInterface = async (
   };
 
   cameraApiChannel.onclosing = (e) =>
-    console.log("Closing the data channel because" + e);
+    log(`Closing the data channel because + ${e}`);
 
-  cameraApiChannel.onclose = (e) => console.log("Channel closed");
+  cameraApiChannel.onclose = (e) => log("Channel closed");
 
-  cameraApiChannel.onerror = (e) => console.log("Channel error");
+  cameraApiChannel.onerror = (e) => log("Channel error");
 
   cameraApiChannel.bufferedAmountLowThreshold = 1000 * 1024;
 
   cameraApiChannel.onbufferedamountlow = (e) =>
-    console.log("Buffer amount low", e);
+    log(`Buffer amount low ${e}`);
 };
 
 const setupMediaChannelStream = async (peerConnection: RTCPeerConnection) => {
@@ -286,10 +286,10 @@ const getDeviceId = async () => {
 
   if (match && match[1]) {
     const deviceId = match[1];
-    console.log("Device ID:", deviceId);
+    log(`Device ID: ${deviceId}`);
     return deviceId;
   } else {
-    console.log("Device ID not found");
+    log("Device ID not found");
     return null;
   }
 };
@@ -317,10 +317,15 @@ const logSelectedCandidates = (peerConnection: RTCPeerConnection) => {
   peerConnection.getStats().then((stats) => {
     stats.forEach((report) => {
       if (report.type === "candidate-pair" && report.state === "succeeded") {
-        console.log("Selected candidate pair:", report);
-        console.log("Local candidate:", stats.get(report.localCandidateId));
-        console.log("Remote candidate:", stats.get(report.remoteCandidateId));
+        log(`Selected candidate pair: ${report}`);
+        log(`"Local candidate: ${stats.get(report.localCandidateId)}`);
+        log(`Remote candidate: ${stats.get(report.remoteCandidateId)}`);
       }
     });
   });
+};
+
+const log = (message: any, level?: string) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${message}`);
 };
