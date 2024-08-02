@@ -23,29 +23,9 @@ const servers = {
     },
     {
       urls: "stun:stun.relay.metered.ca:80",
-    },
-    {
-      urls: "turn:global.relay.metered.ca:80",
-      username: "b422c3e90bbaf4446afbd9a2",
-      credential: "NQ4HMdJ2DDKQUrAH",
-    },
-    {
-      urls: "turn:global.relay.metered.ca:80?transport=tcp",
-      username: "b422c3e90bbaf4446afbd9a2",
-      credential: "NQ4HMdJ2DDKQUrAH",
-    },
-    {
-      urls: "turn:global.relay.metered.ca:443",
-      username: "b422c3e90bbaf4446afbd9a2",
-      credential: "NQ4HMdJ2DDKQUrAH",
-    },
-    {
-      urls: "turns:global.relay.metered.ca:443?transport=tcp",
-      username: "b422c3e90bbaf4446afbd9a2",
-      credential: "NQ4HMdJ2DDKQUrAH",
-    },
+    }
   ],
-  iceCandidatePoolSize: 10,
+  iceCandidatePoolSize: 10
 };
 
 let exposure = 300;
