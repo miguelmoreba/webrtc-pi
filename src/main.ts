@@ -64,7 +64,7 @@ signalRConnection.start().then(async () => {
       );
 
       signalRConnection.on(
-        `VerifiedIceCandidate-client-${sessionUuid}`,
+        `VerifiedIceCandidateFrom-client-${sessionUuid}`,
         async (sessionUuid, candidate) => {
           log(`new candidate ${candidate} ${sessionUuid}`);
           try {
