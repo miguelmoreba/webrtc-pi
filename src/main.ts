@@ -12,7 +12,10 @@ import {
   RTCIceCandidate,
 } from "wrtc";
 
-const API_URL = "https://dev-api-vpc.egoscue.com";
+const API_URL = process.env.API_URL;
+// const API_URL = "https://dev-api-vpc.egoscue.com";
+// const API_URL = "https://localhost:5001"
+
 
 const CAMERA_API_URL = "https://localhost";
 
