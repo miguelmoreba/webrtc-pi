@@ -49,7 +49,7 @@ const peerConnections = new Map<string, RTCPeerConnection>();
 signalRConnection.start().then(async () => {
   log("Connected to signalR");
 
-  const deviceId = (await getDeviceId()) || "100000001d638428";
+  const deviceId = await getDeviceId();
 
   signalRConnection.on(
     `ClientRequiresStream-${deviceId}`,
