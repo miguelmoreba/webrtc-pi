@@ -13,6 +13,8 @@ import {
 } from "wrtc";
 
 const API_URL = process.env.API_URL;
+
+const DEVICE_ID = process.env.DEVICE_ID;
 // const API_URL = "https://dev-api-vpc.egoscue.com";
 // const API_URL = "https://localhost:5001"
 
@@ -49,7 +51,7 @@ const peerConnections = new Map<string, RTCPeerConnection>();
 signalRConnection.start().then(async () => {
   log("Connected to signalR");
 
-  const deviceId = await getDeviceId();
+  const deviceId = DEVICE_ID || await getDeviceId();
 
   signalRConnection.on(
     `ClientRequiresStream-${deviceId}`,
