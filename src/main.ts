@@ -15,10 +15,10 @@ import {
 import { readFile } from "fs/promises";
 
 const DEVICE_ID = process.env.DEVICE_ID;
-const API_URL = process.env.API_URL;
+// const API_URL = process.env.API_URL;
 
 // For development
-// const API_URL = "https://dev-api-vpc.egoscue.com";
+const API_URL = "https://dev-api-vpc.egoscue.com";
 // const API_URL = "https://localhost:5001"
 
 const CAMERA_API_URL = "https://localhost";
@@ -316,5 +316,8 @@ const getDeviceId = async () => {
     }
   }
 
-  log("Serial number not found.");
+  log("Device Id not found.", "error");
+
+  throw new Error("Device Id not found");
+
 };
