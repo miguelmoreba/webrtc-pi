@@ -12,12 +12,14 @@ import {
   RTCIceCandidate,
 } from "wrtc";
 
-const API_URL = process.env.API_URL;
+import { readFile } from "fs/promises";
 
 const DEVICE_ID = process.env.DEVICE_ID;
+const API_URL = process.env.API_URL;
+
+// For development
 // const API_URL = "https://dev-api-vpc.egoscue.com";
 // const API_URL = "https://localhost:5001"
-
 
 const CAMERA_API_URL = "https://localhost";
 
@@ -28,9 +30,9 @@ const servers = {
     },
     {
       urls: "stun:stun.relay.metered.ca:80",
-    }
+    },
   ],
-  iceCandidatePoolSize: 10
+  iceCandidatePoolSize: 10,
 };
 
 let exposure = 300;
@@ -51,7 +53,7 @@ const peerConnections = new Map<string, RTCPeerConnection>();
 signalRConnection.start().then(async () => {
   log("Connected to signalR");
 
-  const deviceId = DEVICE_ID || await getDeviceId();
+  const deviceId = await getDeviceId();
 
   signalRConnection.on(
     `ClientRequiresStream-${deviceId}`,
@@ -202,8 +204,7 @@ const setUpDataChannelApiInterface = async (
 
   cameraApiChannel.bufferedAmountLowThreshold = 1000 * 1024;
 
-  cameraApiChannel.onbufferedamountlow = (e) =>
-    log(`Buffer amount low ${e}`);
+  cameraApiChannel.onbufferedamountlow = (e) => log(`Buffer amount low ${e}`);
 };
 
 const setupMediaChannelStream = async (peerConnection: RTCPeerConnection) => {
@@ -262,23 +263,6 @@ const getCaptureFromApi = async () => {
   }
 };
 
-const getDeviceId = async () => {
-  const response = await fetch("http://localhost");
-  const htmlString = await response.text();
-
-  const pattern = /value="(\d+\w+)"/;
-  const match = htmlString.match(pattern);
-
-  if (match && match[1]) {
-    const deviceId = match[1];
-    log(`Device ID: ${deviceId}`);
-    return deviceId;
-  } else {
-    log("Device ID not found");
-    return null;
-  }
-};
-
 const sendBufferInChunks = (
   dataChannel: RTCDataChannel,
   buffer: ArrayBuffer
@@ -313,4 +297,24 @@ const logSelectedCandidates = (peerConnection: RTCPeerConnection) => {
 const log = (message: any, level?: string) => {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] ${message}`);
+};
+
+const getDeviceId = async () => {
+  if (DEVICE_ID) {
+    log(`Hard coded device Id passed to container, using ${DEVICE_ID}`);
+  }
+
+  const data = await readFile("/proc/cpuinfo", "utf8");
+
+  const lines = data.split("\n");
+
+  for (let line of lines) {
+    if (line.toLowerCase().startsWith("serial")) {
+      const serial = line.split(":")[1].trim();
+      log(`Device Id: ${serial}`);
+      return serial;
+    }
+  }
+
+  log("Serial number not found.");
 };
